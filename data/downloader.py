@@ -2,9 +2,9 @@
 The install script for the data package.
 """
 
-import urllib.request
+import os
+import requests
 import zipfile
-import io
 
 WC_VERSION = "2.1"
 BASE_URL = f"https://biogeo.ucdavis.edu/data/worldclim/v{WC_VERSION}/base/wc{WC_VERSION}"
@@ -85,35 +85,42 @@ def downloadData(variable: str, res: str = "5m", path: str = "./data") -> None:
         path (str, optional): The download path. Defaults to "./data".
     """
 
+    # Check if a file with the same name already exists
+    downloadPath = f'{path}/{variable}_{res}.zip'
+    if os.path.exists(downloadPath):
+        print(f"File {downloadPath} already exists. Skipping download.")
+        return None
+
     url = getFullUrl(variable, res)
 
-    with urllib.request.urlopen(url) as response:
-        data = response.read()
+    response = requests.get(url)
+    response.raise_for_status()
 
     # save the data to a zip file
-    with open(f'{path}/{variable}_{res}.zip', 'wb') as f:
-        f.write(data)
+    with open(downloadPath, 'wb') as f:
+        f.write(response.content)
 
-    return
+    return None
 
 
 if __name__ == "__main__":
 
     from tqdm import tqdm
+    from itertools import product as cartesianProduct
 
     dataDir = "./data"
     variables = ['average temperature', 'precipitation']
     resolutions = ['5 minutes']
 
     print(f"Data directory set to: {dataDir}")
-    print("Downloading data for the following variables:")
-    print(variables)
-    print("At the following resolutions:")
-    print(resolutions)
+    print(f"Downloading data for {variables}")
+    print(f"At {resolutions} resolutions")
 
-    for variable, res in tqdm(zip(variables, resolutions), desc="Downloading data"):
+    for variable, res in tqdm(cartesianProduct(variables, resolutions), desc="Downloading data", colour="green", gui=True):
+        print(f"\nDownloading {variable} at {res} resolution")
         downloadData(VARIABLES[variable], RESOLUTIONS[res], dataDir)
 
-    for variable, res in tqdm(zip(variables, resolutions), desc="Extracting data"):
-        with zipfile.ZipFile(f'{dataDir}/{variable}_{res}.zip', 'r') as zip_ref:
-            zip_ref.extractall(dataDir)
+    for variable, res in tqdm(cartesianProduct(variables, resolutions), desc="Extracting data"):
+        fileName = f'{VARIABLES[variable]}_{RESOLUTIONS[res]}'
+        with zipfile.ZipFile(f'{dataDir}/{fileName}.zip', 'r') as zip_ref:
+            zip_ref.extractall(f"{dataDir}/{fileName}")

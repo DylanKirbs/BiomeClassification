@@ -56,3 +56,10 @@ The probability of $B$ occurring is then given by $P(B) \div \sum postulates$, b
 The data used in this project is from the [WorldClim](https://www.worldclim.org/) database. The data is available for download [here](https://www.worldclim.org/data/worldclim21.html).
 
 The 5 minute resolution data is used for this project.
+
+The downloader script will download and extract the `.tif` files for the following variables by default:
+
+- Average Temperature
+- Precipitation
+
+At 5 minute resolution, the data is available for the years 1970-2000.

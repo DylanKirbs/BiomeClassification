@@ -1,2 +1,6 @@
+# Editor configuration
 .vscode
+
+# Large Data Files
 data/*.zip
+data/*/
