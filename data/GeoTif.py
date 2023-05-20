@@ -1,12 +1,15 @@
 """
-A module containing utility functions for reading and writing data.
+A module containing utility functions for reading and writing GeoTif files
 """
+
+if __name__ == "__main__":
+    print("Please import the module.")
+    exit(0)
 
 import os
 import rasterio
 import pandas as pd
 import numpy as np
-from .constants import WC_VERSION
 
 
 def readGeoData(file: str):
@@ -65,34 +68,9 @@ def writeGeoData(data, metadata, file: str):
         file (str): The file path to save it to.
     """
 
-    # Convert the dataframe to a numpy array and account for the no data value
+    # Convert the dataframe to a numpy array
     data = data.to_numpy()
 
     # Write the data to a .tif file
     with rasterio.open(file, "w", **metadata) as dataset:
         dataset.write(data, 1)
-
-
-def plotHeatmap(plt, data, title, cmap="coolwarm", tick_labels=[0, 1]):
-    """
-    Plot a heatmap of the data.
-
-    Args:
-        data (DataFrame): The data to plot.
-        title (str): The title of the plot.
-        cmap (str, optional): The color map to use. Defaults to "coolwarm".
-        tick_labels (list, optional): The tick labels to use. Defaults to [0, 1].
-    """
-    dims = data.shape[::-1]
-
-    dims = (dims[0] / max(dims), dims[1] / max(dims))
-    dims = (dims[0] * 20, dims[1] * 20)
-
-    # Set up the figure
-    plt.figure(figsize=dims)
-    plt.title(title)
-    plt.xlabel("Longitude")
-    plt.ylabel("Latitude")
-    plt.imshow(data, cmap=cmap)
-    cbar = plt.colorbar(ticks=np.arange(len(tick_labels)))
-    cbar.set_ticklabels(tick_labels)

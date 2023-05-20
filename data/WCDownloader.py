@@ -2,10 +2,58 @@
 The install script for the data package.
 """
 
+if __name__ == "__main__":
+    print("Please import the module.")
+    exit(0)
+
 import os
 import requests
 import zipfile
-from .constants import BASE_URL, VARIABLES, RESOLUTIONS, AnsiColours
+
+
+WC_VERSION = "2.1"
+BASE_URL = f"https://biogeo.ucdavis.edu/data/worldclim/v{WC_VERSION}/base/wc{WC_VERSION}"
+"""
+The base url for the WorldClim data.
+"""
+
+VARIABLES = [
+    "tmin",
+    "tmax",
+    "tavg",
+    "prec",
+    "srad",
+    "wind",
+    "vapr",
+    "bio",
+    "elev"
+]
+"""
+The variables available for download are:
+    - minimum temperature (C)
+    - maximum temperature (C)
+    - average temperature (C)
+    - precipitation (mm)
+    - solar radiation (W/m^2)
+    - wind speed (m/s)
+    - vapor pressure (hPa)
+    - bioclimactic variables (19 variables)
+    - elevation (m)
+"""
+
+RESOLUTIONS = [
+    "30s",
+    "2.5m",
+    "5m",
+    "10m",
+]
+"""
+The resolutions available for download are:
+    - 30 arc-seconds
+    - 2.5 arc-minutes
+    - 5 arc-minutes
+    - 10 arc-minutes   
+"""
 
 
 def getFullUrl(variable: str, res: str = "5m") -> str:
@@ -71,32 +119,3 @@ def extractData(variable: str, res: str = "5m", dataDir: str = "./data"):
     fileName = f'{variable}_{res}'
     with zipfile.ZipFile(f'{dataDir}/{fileName}.zip', 'r') as zip_ref:
         zip_ref.extractall(f"{dataDir}/{fileName}")
-
-
-if __name__ == "__main__":
-
-    from tqdm import tqdm
-    from itertools import product as cartesianProduct
-
-    dataDir = "./data"
-    variables = ['average temperature', 'precipitation']
-    resolutions = ['5 minutes']
-    downloadList = [(VARIABLES[variable], RESOLUTIONS[res])
-                    for variable, res in cartesianProduct(variables, resolutions)]
-
-    print(f"{AnsiColours.GREEN}Data directory set to: {AnsiColours.BLUE}{dataDir}{AnsiColours.RESET}")
-    print(f"Downloading data for {variables}")
-    print(f"At {resolutions} resolutions")
-
-    try:
-        for variable, res in tqdm(downloadList, desc="Downloading data", colour="green", unit="file"):
-            downloadData(variable, res, dataDir)
-
-        for variable, res in tqdm(downloadList, desc="Extracting data", colour="green", unit="file"):
-            extractData(variable, res, dataDir)
-
-    except Exception as e:
-        print(f"{AnsiColours.RED}Fatal Exception! Download Failed{AnsiColours.RESET}")
-        print(f"{AnsiColours.RED}Error: {e}{AnsiColours.RESET}")
-
-    print(f"{AnsiColours.GREEN}Done!{AnsiColours.RESET}")

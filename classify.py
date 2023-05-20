@@ -3,9 +3,9 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 import matplotlib.pyplot as plt
-from data.constants import RESOLUTIONS, AnsiColours
-from data.downloader import downloadData, extractData
-from data.dataUtils import readGeoData, writeGeoData, plotHeatmap
+from constants import RESOLUTIONS, AnsiColours
+from data.WCDownloader import downloadData, extractData
+from data.GeoTif import readGeoData, writeGeoData
 from constants import KOPPEN_DICT, CLASSIFICATION_CMAP, CLASSIFICATION_NAMES
 import concurrent.futures
 
@@ -125,7 +125,7 @@ def concurrentClassification(data: pd.DataFrame, num_chunks: int = 100, thread_c
               for i in range(0, data.shape[0], chunk_size)]
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=thread_count) as executor:
-        classified_chunks = list(executor.map(classify_chunk, chunks))
+        classified_chunks = list(executor.map(computeChunk, chunks))
 
     # Combine the classified chunks back into a single DataFrame
     classified_data = pd.concat(classified_chunks)

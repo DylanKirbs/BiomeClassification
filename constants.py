@@ -1,6 +1,7 @@
 import matplotlib.colors as colors
 
 KOPPEN_DICT = {
+    "": 0,
     "Af": 1,
     "Am": 2,
     "Aw": 3,
@@ -46,10 +47,10 @@ It is recommended to use: `KOPPEN_DICT.get("Af", 0)` instead incase an invalid k
 
 INVERSE_KOPPEN_DICT = dict((v, k) for k, v in KOPPEN_DICT.items())
 """
-The inverse of the Koeppen-Geiger climate classification dictionary.
+The inverse of the Koppen-Geiger climate classification dictionary.
 
 The keys are the integer codes, and the values are the corresponding
-Koeppen-Geiger climate classification codes.
+Koppen-Geiger climate classification codes.
 
 Eg:
     >>> INVERSE_KOPPEN_DICT[1] # returns "Af"
@@ -91,12 +92,12 @@ CLASSIFICATION_COLORS = [
     '#686868'
 ]
 """
-The list of colors used to represent the Koeppen-Geiger climate classification.
+The list of colors used to represent the Koppen-Geiger climate classification.
 
 The colors are stored as hex values.
 
-The values correspond to the Koeppen-Geiger climate classification integer codes from the `KOPPEN_DICT` dictionary.
-Value 0 is reserved for the "NA" classification, this is the default color for the map.
+The values correspond to the Koppen-Geiger climate classification integer codes from the `KOPPEN_DICT` dictionary.
+Value 0 is reserved for the "NA" or empty classification, this is the default color for the map.
 """
 
 CLASSIFICATION_CMAP = colors.ListedColormap(
@@ -106,41 +107,9 @@ CLASSIFICATION_CMAP = colors.ListedColormap(
 Matplotlib CMAP of the classification colors
 """
 
-CLASSIFICATION_NAMES = [
-    "",
-    "Af",
-    "Am",
-    "Aw",
-    "BWh",
-    "BWk",
-    "BSh",
-    "BSk",
-    "Csa",
-    "Csb",
-    "Csc",
-    "Cwa",
-    "Cwb",
-    "Cwc",
-    "Cfa",
-    "Cfb",
-    "Cfc",
-    "Dsa",
-    "Dsb",
-    "Dsc",
-    "Dsd",
-    "Dwa",
-    "Dwb",
-    "Dwc",
-    "Dwd",
-    "Dfa",
-    "Dfb",
-    "Dfc",
-    "Dfd",
-    "ET",
-    "EF"
-]
+CLASSIFICATION_NAMES = list(KOPPEN_DICT.keys())
 """
-The list of Koeppen-Geiger climate classification names.
+The list of Koppen-Geiger climate classification names.
 
-Index 0 is reserved for the "NA" classification.
+Index 0 is reserved for the "NA" or empty classification.
 """
