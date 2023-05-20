@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Prefix colours with CL_ for readability
+CL_RESET="\e[0m"
+CL_RED="\e[31m"
+CL_GREEN="\e[32m"
+CL_YELLOW="\e[33m"
+CL_BLUE="\e[34m"
+
+echo -e "${CL_BLUE}Running Installation Script${CL_RESET}"

@@ -4,145 +4,9 @@ import pandas as pd
 from tqdm import tqdm
 import concurrent.futures
 import matplotlib.pyplot as plt
-from constants import KOPPEN_DICT
-from printUtils import cPrint, AnsiColours
+from utilities.constants import KOPPEN_DICT
 from data.GeoTif import readGeoData, writeGeoData
-from data.WCDownloader import downloadData, extractData, RESOLUTIONS
-
-
-def downloadRequiredFiles(files: list[str], resolution, dataPath: str = "./data") -> None:
-    """
-    Checks for and downloads any necessary files from the list.
-
-    The file list should simply contain the WC variable names.
-    For example:
-        `files = ['tavg','prec']`
-
-    Args:
-        files (list[str]): The list of files.
-        resolution (str): The resolution of the files.
-        dataPath (str, optional): The data directory. Defaults to "./data".
-    """
-
-    cPrint("Checking for required files.", AnsiColours.BLUE)
-
-    # Check for the directory
-    if not os.path.isdir(dataPath):
-        cPrint("Creating data directory.", AnsiColours.YELLOW)
-        os.makedirs(dataPath)
-
-    # Check for the files
-    for file in files:
-        if not os.path.isdir(f"{dataPath}/{file}_{resolution}"):
-            cPrint(
-                f"{file}_{resolution} directory not found. Checking for zip file.", AnsiColours.YELLOW)
-
-            # Check for the zip file
-            if not os.path.isfile(f"{dataPath}/{file}_{resolution}.zip"):
-                cPrint(
-                    f"{file}_{resolution}.zip not found. Downloading.", AnsiColours.YELLOW)
-                downloadData(file, resolution, dataPath)
-                cPrint(f"{file}_{resolution}.zip downloaded.",
-                       AnsiColours.GREEN)
-
-            # Extract the zip file
-            extractData(file, resolution, dataPath)
-            cPrint(f"{file}_{resolution}.zip extracted.", AnsiColours.GREEN)
-
-        cPrint(f"{file}_{resolution} directory found.", AnsiColours.GREEN)
-
-
-def readGeodataDirs(dataDirs: list[str], dataPath: str = "./data"):
-    """
-    Read the Geodata files into a dictionary.
-
-    Args:
-        dataDirs (list[str]): The list of data directories.
-        dataPath (str, optional): The data directory. Defaults to "./data".
-
-    Returns:
-        dict[str, tuple]: The geodata dictionary.
-    """
-
-    geoData: dict[str, tuple] = {}
-    for dir in tqdm(dataDirs, desc="Retrieving files", unit="directories"):
-
-        # Get the files from the directory
-        files = os.listdir(f"{dataPath}/{dir}")
-        files = [file for file in files if file.endswith(".tif")]
-        files.sort(key=lambda x: int(x.split("_")[-1].split(".")[0]))
-
-        for file in files:
-            # Files in the directory are named like wc2.1_5m_bio_1.tif
-            # The key is 5m_bio_1
-            key = str('_'.join(file.split(".")[-2].split("_")[1:]))
-            geoData[key] = readGeoData(f'{dataPath}/{dir}/{file}')
-
-    return geoData
-
-
-def concurrentClassification(data: pd.DataFrame, num_chunks: int = 100, thread_count: int = 2):
-    """
-    Classifies the given geodata concurrently.
-
-    TODO: Implement threading
-
-    Args:
-        data (pd.DataFrame): The geodata to classify.
-        num_chunks (int, optional): Number of chunks. Defaults to 100.
-        thread_count (int, optional): Number of threads. Defaults to 2.
-
-    Returns:
-        pd.DataFrame: The classified geodata.
-    """
-
-    """ # TODO Confirm the new method works before removing this
-    chunk_size = data.shape[0] // chunks
-
-    for i in tqdm(range(0, data.shape[0], chunk_size), desc="Computing chunks", unit="chunks"):
-
-        data.loc[i:i+chunk_size,
-                 'classification'] = computeChunk(data.loc[i:i+chunk_size, :])
-
-    return data
-    """
-
-    chunk_size = data.shape[0] // num_chunks
-    chunks = [data.iloc[i:i + chunk_size]
-              for i in range(0, data.shape[0], chunk_size)]
-
-    with concurrent.futures.ThreadPoolExecutor(max_workers=thread_count) as executor:
-        classified_chunks = list(executor.map(computeChunk, chunks))
-
-    # Combine the classified chunks back into a single DataFrame
-    classified_data = pd.concat(classified_chunks)
-
-    return classified_data
-
-
-def computeChunk(chunk):
-    """
-    Processes a single chunk of the dataframe.
-
-    It is assumed that each row of the chunk follows this format:
-    [lat, lon, classification, bio(1-19), tavg(1-12), prec(1-12)]
-
-    The chunk will be updated to contain the Koppen-Geiger classification.
-
-    Args:
-        chunk (dataframe): The chunk to process
-
-    Returns:
-        dataframe: The processed chunk
-    """
-
-    # row[0:2] are lat, lon & classification
-    # row[3:21] are bio
-    # row[22:34] are tavg
-    # row[35:47] are prec
-
-    return chunk.apply(
-        lambda row: koppenGeigerClassify(row[3:21], row[22:34], row[35:47], row[0] > 0), axis=1)
+from data.WCDownloader import downloadFileList, RESOLUTIONS
 
 
 def computeRegionalClassification(resolution: str, dataPath: str = "./data"):
@@ -180,16 +44,13 @@ def computeRegionalClassification(resolution: str, dataPath: str = "./data"):
         f"Computing regional classification on {resolution} resolution WorldClim data.")
 
     # Initialise the Constants
-    REQUIRED_VARS = ["bio", "tavg", "prec"]
-    CHUNKS = 100
-    NUM_THREADS = 3
 
     # Validate the resolution
     if resolution not in RESOLUTIONS:
         raise ValueError(
             f"Invalid resolution: {resolution}.\nValid resolutions are: {RESOLUTIONS}")
 
-    downloadRequiredFiles(REQUIRED_VARS, resolution, dataPath)
+    downloadFileList(REQUIRED_VARS, resolution, dataPath)
 
     dataDirs = list(f"{var}_{resolution}" for var in REQUIRED_VARS)
     geoData = readGeodataDirs(dataDirs, dataPath)
