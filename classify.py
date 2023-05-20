@@ -5,10 +5,9 @@ from tqdm import tqdm
 import seaborn as sns
 import matplotlib.pyplot as plt
 from data.constants import RESOLUTIONS, AnsiColours
-from itertools import product as cartesian_product
 from data.downloader import downloadData, extractData
 from data.dataUtils import readGeoData, writeGeoData, plotHeatmap
-from constants import KOPPEN_DICT, CLASSIFICATION_CMAP
+from constants import KOPPEN_DICT, CLASSIFICATION_CMAP, CLASSIFICATION_NAMES
 import concurrent.futures
 
 
@@ -199,7 +198,7 @@ def computeRegionalClassification(resolution: str, dataPath: str = "./data"):
     data = pd.DataFrame(
         columns=["lat", "lon", "classification"].extend(geoData.keys()))
 
-    meta, base = geoData.get(list(geoData.keys())[0])
+    meta, base = geoData.get(list(geoData.keys())[0])  # type: ignore
     data["lat"] = np.repeat(base.index.values, base.shape[1])
     data["lon"] = np.tile(base.columns.values, base.shape[0])
     data["classification"] = 0  # classification values
@@ -378,6 +377,6 @@ if __name__ == "__main__":
     print("Plotting...")
     # plot the data using the colors from `CLASSIFICATION_COLORS`
     plotHeatmap(plt, sns, classification,
-                "Classification", cmap=CLASSIFICATION_CMAP)
+                "Classification", cmap=CLASSIFICATION_CMAP, ticklabels=CLASSIFICATION_NAMES)
     plt.savefig(f"./classification_{resolution}.png")
     plt.show()
