@@ -105,3 +105,42 @@ CLASSIFICATION_CMAP = colors.ListedColormap(
 """
 Matplotlib CMAP of the classification colors
 """
+
+CLASSIFICATION_NAMES = [
+    "",
+    "Af",
+    "Am",
+    "Aw",
+    "BWh",
+    "BWk",
+    "BSh",
+    "BSk",
+    "Csa",
+    "Csb",
+    "Csc",
+    "Cwa",
+    "Cwb",
+    "Cwc",
+    "Cfa",
+    "Cfb",
+    "Cfc",
+    "Dsa",
+    "Dsb",
+    "Dsc",
+    "Dsd",
+    "Dwa",
+    "Dwb",
+    "Dwc",
+    "Dwd",
+    "Dfa",
+    "Dfb",
+    "Dfc",
+    "Dfd",
+    "ET",
+    "EF"
+]
+"""
+The list of Koeppen-Geiger climate classification names.
+
+Index 0 is reserved for the "NA" classification.
+"""
