@@ -101,7 +101,7 @@ Value 0 is reserved for the "NA" classification, this is the default color for t
 
 CLASSIFICATION_CMAP = colors.ListedColormap(
     [colors.hex2color(hex_value)for hex_value in CLASSIFICATION_COLORS]
-)
+)  # type: ignore
 """
 Matplotlib CMAP of the classification colors
 """
