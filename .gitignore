@@ -4,3 +4,6 @@
 # Large Data Files
 data/*.zip
 data/*/
+
+# Python Chache Files
+*__pycache__/
