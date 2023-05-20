@@ -5,51 +5,7 @@ The install script for the data package.
 import os
 import requests
 import zipfile
-
-WC_VERSION = "2.1"
-BASE_URL = f"https://biogeo.ucdavis.edu/data/worldclim/v{WC_VERSION}/base/wc{WC_VERSION}"
-
-VARIABLES = {
-    "minimum temperature": "tmin",
-    "maximum temperature": "tmax",
-    "average temperature": "tavg",
-    "precipitation": "prec",
-    "solar radiation": "srad",
-    "wind speed": "wind",
-    "vapor pressure": "vapr",
-}
-"""
-The variables available for download.
-
-The key is the name of the variable and the value is the code used in the url.
-
-The variables are:
-    - minimum temperature (C)
-    - maximum temperature (C)
-    - average temperature (C)
-    - precipitation (mm)
-    - solar radiation (W/m^2)
-    - wind speed (m/s)
-    - vapor pressure (hPa)
-"""
-
-RESOLUTIONS = {
-    "30 seconds": "30s",
-    "2.5 minutes": "2.5m",
-    "5 minutes": "5m",
-    "10 minutes": "10m",
-}
-"""
-The resolutions available for download.
-
-The key is the name of the resolution and the value is the code used in the url.
-
-The resolutions are:
-    - 30 seconds
-    - 2.5 minutes
-    - 5 minutes
-    - 10 minutes   
-"""
+from .constants import BASE_URL, VARIABLES, RESOLUTIONS, AnsiColours
 
 
 def getFullUrl(variable: str, res: str = "5m") -> str:
@@ -103,6 +59,20 @@ def downloadData(variable: str, res: str = "5m", path: str = "./data") -> None:
     return None
 
 
+def extractData(variable: str, res: str = "5m", dataDir: str = "./data"):
+    """
+    Extracts the data from the zip file into a folder.
+
+    Args:
+        variable (str): The variable of the data.
+        res (str, optional): The resolution. Defaults to "5m".
+        dataDir (str, optional): The data directory. Defaults to "./data".
+    """
+    fileName = f'{variable}_{res}'
+    with zipfile.ZipFile(f'{dataDir}/{fileName}.zip', 'r') as zip_ref:
+        zip_ref.extractall(f"{dataDir}/{fileName}")
+
+
 if __name__ == "__main__":
 
     from tqdm import tqdm
@@ -111,16 +81,22 @@ if __name__ == "__main__":
     dataDir = "./data"
     variables = ['average temperature', 'precipitation']
     resolutions = ['5 minutes']
+    downloadList = [(VARIABLES[variable], RESOLUTIONS[res])
+                    for variable, res in cartesianProduct(variables, resolutions)]
 
-    print(f"Data directory set to: {dataDir}")
+    print(f"{AnsiColours.Green}Data directory set to: {AnsiColours.Blue}{dataDir}{AnsiColours.Reset}")
     print(f"Downloading data for {variables}")
     print(f"At {resolutions} resolutions")
 
-    for variable, res in tqdm(cartesianProduct(variables, resolutions), desc="Downloading data", colour="green", gui=True):
-        print(f"\nDownloading {variable} at {res} resolution")
-        downloadData(VARIABLES[variable], RESOLUTIONS[res], dataDir)
+    try:
+        for variable, res in tqdm(downloadList, desc="Downloading data", colour="green", unit="file"):
+            downloadData(variable, res, dataDir)
 
-    for variable, res in tqdm(cartesianProduct(variables, resolutions), desc="Extracting data"):
-        fileName = f'{VARIABLES[variable]}_{RESOLUTIONS[res]}'
-        with zipfile.ZipFile(f'{dataDir}/{fileName}.zip', 'r') as zip_ref:
-            zip_ref.extractall(f"{dataDir}/{fileName}")
+        for variable, res in tqdm(downloadList, desc="Extracting data", colour="green", unit="file"):
+            extractData(variable, res, dataDir)
+
+    except Exception as e:
+        print(f"{AnsiColours.Red}Fatal Exception! Download Failed{AnsiColours.Reset}")
+        print(f"{AnsiColours.Red}Error: {e}{AnsiColours.Reset}")
+
+    print(f"{AnsiColours.Green}Done!{AnsiColours.Reset}")
