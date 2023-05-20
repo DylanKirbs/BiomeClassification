@@ -1,4 +1,4 @@
-# Classification of Biomes Using the Naive Bayes Classifier
+# Climate Classification
 
 ## Introduction
 
@@ -16,17 +16,44 @@ And in future we hope to include the following observed variables:
 - Vegetation Type
 - Animal Type
 
-## The Classifier
+## The Classifications Methods
+
+Predicting the biome of a given location based on the observed variables is a classification problem. There are many classification methods available, but we will focus on the following:
+
+- [Climate Classification](#climate-classification)
+  - [Introduction](#introduction)
+  - [The Classifications Methods](#the-classifications-methods)
+    - [Koppen-Geiger Climate Classification](#koppen-geiger-climate-classification)
+    - [The Naive Bayes Classifier](#the-naive-bayes-classifier)
+  - [The Data](#the-data)
+
+### Koppen-Geiger Climate Classification
+
+The Koppen-Geiger climate classification is designed specifically for climate classification. It divides the climate into 5 main categories, which are then further divided into subcategories. The main categories are as follows:
+
+- A: Tropical
+- B: Dry
+- C: Temperate
+- D: Continental
+- E: Polar
+
+
+More information on the Koppen-Geiger climate classification can be found [here](https://en.wikipedia.org/wiki/K%C3%B6ppen_climate_classification).
+
+A heavily modified version of [salvah22](https://github.com/salvah22/koppenclassification)'s python implementation is used.
+
+The Koppen-Geiger classification will then be applied to the data to create a training set for the Naive Bayes classifier.
+
+### The Naive Bayes Classifier
 
 The Naive Bayes classifier is a probabilistic classifier that uses Bayes' theorem to calculate the probability of a certain observation being in a certain category based on the assumption that the observed variables are independent of each other.
+
+More information on the Naive Bayes classifier can be found [here](https://en.wikipedia.org/wiki/Naive_Bayes_classifier).
 
 Bayes' theorem is as follows:
 $$P(A|B) = \frac{P(B|A)P(A)}{P(B)}$$
 
-
-### Project Context
-
-We assume the following:
+In the context of the project we can assume the following:
 
 - The observed variables are independent of each other
 - The observed variables are normally distributed
