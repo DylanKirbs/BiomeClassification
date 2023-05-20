@@ -18,6 +18,8 @@ VARIABLES = {
     "solar radiation": "srad",
     "wind speed": "wind",
     "vapor pressure": "vapr",
+    "bioclimactic variables": "bio",
+    "elevation": "elev"
 }
 """
 The variables available for download.
@@ -32,6 +34,8 @@ The variables are:
     - solar radiation (W/m^2)
     - wind speed (m/s)
     - vapor pressure (hPa)
+    - bioclimactic variables (19 variables)
+    - elevation (m)
 """
 
 RESOLUTIONS = {
@@ -55,15 +59,15 @@ The resolutions are:
 
 @dataclass
 class AnsiColours:
-    Red: str = "\033[91m"
-    Green: str = "\033[92m"
-    Yellow: str = "\033[93m"
-    Blue: str = "\033[94m"
-    Magenta: str = "\033[95m"
-    Cyan: str = "\033[96m"
-    White: str = "\033[97m"
-    Reset: str = "\033[0m"
+    RED: str = "\033[91m"
+    GREEN: str = "\033[92m"
+    YELLOW: str = "\033[93m"
+    BLUE: str = "\033[94m"
+    MAGENTA: str = "\033[95m"
+    CYAN: str = "\033[96m"
+    WHITE: str = "\033[97m"
+    RESET: str = "\033[0m"
 
 
 if __name__ == "__main__":
-    print(f"{AnsiColours.Red}This is a module. Import it instead.{AnsiColours.Reset}")
+    print(f"{AnsiColours.RED}This is a module. Import it instead.{AnsiColours.RESET}")

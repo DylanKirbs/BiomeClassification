@@ -84,7 +84,7 @@ if __name__ == "__main__":
     downloadList = [(VARIABLES[variable], RESOLUTIONS[res])
                     for variable, res in cartesianProduct(variables, resolutions)]
 
-    print(f"{AnsiColours.Green}Data directory set to: {AnsiColours.Blue}{dataDir}{AnsiColours.Reset}")
+    print(f"{AnsiColours.GREEN}Data directory set to: {AnsiColours.BLUE}{dataDir}{AnsiColours.RESET}")
     print(f"Downloading data for {variables}")
     print(f"At {resolutions} resolutions")
 
@@ -96,7 +96,7 @@ if __name__ == "__main__":
             extractData(variable, res, dataDir)
 
     except Exception as e:
-        print(f"{AnsiColours.Red}Fatal Exception! Download Failed{AnsiColours.Reset}")
-        print(f"{AnsiColours.Red}Error: {e}{AnsiColours.Reset}")
+        print(f"{AnsiColours.RED}Fatal Exception! Download Failed{AnsiColours.RESET}")
+        print(f"{AnsiColours.RED}Error: {e}{AnsiColours.RESET}")
 
-    print(f"{AnsiColours.Green}Done!{AnsiColours.Reset}")
+    print(f"{AnsiColours.GREEN}Done!{AnsiColours.RESET}")

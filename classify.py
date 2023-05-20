@@ -4,12 +4,25 @@ import pandas as pd
 from tqdm import tqdm
 import seaborn as sns
 import matplotlib.pyplot as plt
-from data.constants import RESOLUTIONS
+from data.constants import RESOLUTIONS, AnsiColours
 from itertools import product as cartesian_product
 from data.downloader import downloadData, extractData
-from data.dataUtils import readGeoData, getFilePath, writeGeoData, plotHeatmap
+from data.dataUtils import readGeoData, writeGeoData, plotHeatmap
 from constants import KOPPEN_DICT, CLASSIFICATION_CMAP
 import concurrent.futures
+
+
+def cPrint(text: str, colour: str = AnsiColours.WHITE, end: str = "\n") -> None:
+    """
+    Prints the given text in the given colour.
+
+    Args:
+        text (str): The text to print.
+        colour (str, optional): The ANSI colour string to print in. Defaults to AnsiColours.WHITE.
+        end (str, optional): The end character. Defaults to "\n".
+    """
+
+    print(f"{colour}{text}{AnsiColours.RESET}", end=end)
 
 
 def downloadRequiredFiles(files: list[str], resolution, dataPath: str = "./data") -> None:
@@ -26,54 +39,66 @@ def downloadRequiredFiles(files: list[str], resolution, dataPath: str = "./data"
         dataPath (str, optional): The data directory. Defaults to "./data".
     """
 
-    print("Downloading files.")
+    cPrint("Checking for required files.", AnsiColours.BLUE)
+
+    # Check for the directory
+    if not os.path.isdir(dataPath):
+        cPrint("Creating data directory.", AnsiColours.YELLOW)
+        os.makedirs(dataPath)
+
+    # Check for the files
     for file in files:
-        if not os.path.isfile(f"{dataPath}/{file}_{resolution}.zip"):
-            print(f"Data for {file} at {resolution} resolution not found.")
-            print("Downloading data...")
-            downloadData(resolution, file, dataPath)
-            print("Extracting data...")
-            extractData(resolution, file, dataPath)
-        else:
-            print(
-                f"Using existing data for {file} at {resolution} resolution.")
+        if not os.path.isdir(f"{dataPath}/{file}_{resolution}"):
+            cPrint(
+                f"{file}_{resolution} directory not found. Checking for zip file.", AnsiColours.YELLOW)
+
+            # Check for the zip file
+            if not os.path.isfile(f"{dataPath}/{file}_{resolution}.zip"):
+                cPrint(
+                    f"{file}_{resolution}.zip not found. Downloading.", AnsiColours.YELLOW)
+                downloadData(file, resolution, dataPath)
+                cPrint(f"{file}_{resolution}.zip downloaded.",
+                       AnsiColours.GREEN)
+
+            # Extract the zip file
+            extractData(file, resolution, dataPath)
+            cPrint(f"{file}_{resolution}.zip extracted.", AnsiColours.GREEN)
+
+        cPrint(f"{file}_{resolution} directory found.", AnsiColours.GREEN)
 
 
-def readGeodataFiles(dataNames: list[tuple[str, str]], resolution: str, dataPath: str = "./data"):
+def readGeodataDirs(dataDirs: list[str], dataPath: str = "./data"):
     """
     Read the Geodata files into a dictionary.
 
-    The data names should be a list of tuples, each with the variable and month.
-    For example:
-        `('tavg', '01')` for the average temperature in January
-
-    The returned geodata dictionary will be indexed with the variable and month as follows.
-        `geodata['tavg_01']` will return the tuple of the metadata and data.
-
     Args:
-        dataNames (list[tuple[str, str]]): The geodata file names as tuples of variable and month.
-        resolution (str): The resolution of the files.
+        dataDirs (list[str]): The list of data directories.
         dataPath (str, optional): The data directory. Defaults to "./data".
 
     Returns:
         dict[str, tuple]: The geodata dictionary.
     """
 
-    geoData = {}
-    for var, month in tqdm(dataNames, desc="Reading files", unit="files"):
+    geoData: dict[str, tuple] = {}
+    for dir in tqdm(dataDirs, desc="Retrieving files", unit="directories"):
 
-        # Get the path
-        filePath = getFilePath(dataPath, var, resolution, month)
+        # Get the files from the directory
+        files = os.listdir(f"{dataPath}/{dir}")
+        files = [file for file in files if file.endswith(".tif")]
+        files.sort(key=lambda x: int(x.split("_")[-1].split(".")[0]))
 
-        # Read the data into the dict
-        geoData[f"{var}_{month}"] = readGeoData(filePath)
+        for file in files:
+            # Files in the directory are named like wc2.1_5m_bio_1.tif
+            # The key is 5m_bio_1
+            key = str('_'.join(file.split(".")[-2].split("_")[1:]))
+            geoData[key] = readGeoData(f'{dataPath}/{dir}/{file}')
 
     return geoData
 
 
-def classifyGeoData(data: pd.DataFrame, chunks_size: int = 100, thread_count: int = 2):
+def concurrentClassification(data: pd.DataFrame, chunks_size: int = 100, thread_count: int = 2):
     """
-    Classifies the given geodata.
+    Classifies the given geodata concurrently.
 
     TODO: Implement threading
 
@@ -90,13 +115,8 @@ def classifyGeoData(data: pd.DataFrame, chunks_size: int = 100, thread_count: in
 
     for i in tqdm(range(0, data.shape[0], chunk_size), desc="Computing chunks", unit="chunks"):
 
-        # Cols 0:2 are lat, lon and class
-        # Cols 3:15 are tavg_01:12
-        # Cols 16:28 are prec_01:12
         data.loc[i:i+chunk_size,
                  'classification'] = computeChunk(data.loc[i:i+chunk_size, :])
-
-        # print(classification.iloc[i:i+chunk_size]['classification'])
 
     return data
 
@@ -106,7 +126,7 @@ def computeChunk(chunk):
     Processes a single chunk of the dataframe.
 
     It is assumed that each row of the chunk follows this format:
-    ['lat', 'lon', 'classification', 'tavg01' ... 'tavg12', 'prec01' ... 'prec12']
+    [lat, lon, classification, bio(1-19), tavg(1-12), prec(1-12)]
 
     The chunk will be updated to contain the Koppen-Geiger classification.
 
@@ -116,8 +136,14 @@ def computeChunk(chunk):
     Returns:
         dataframe: The processed chunk
     """
+
+    # row[0:2] are lat, lon & classification
+    # row[3:21] are bio
+    # row[22:34] are tavg
+    # row[35:47] are prec
+
     return chunk.apply(
-        lambda row: koppenGeigerClassify(row[3:15], row[16:28], row[0] > 0), axis=1)
+        lambda row: koppenGeigerClassify(row[3:21], row[22:34], row[35:47], row[0] > 0), axis=1)
 
 
 def computeRegionalClassification(resolution: str, dataPath: str = "./data"):
@@ -126,7 +152,11 @@ def computeRegionalClassification(resolution: str, dataPath: str = "./data"):
 
     The format will be the same as the WorldClim data, except that it will store the classification as an integer.
 
-    If the `tavg` and `prec` data for the given resolution are not in the data path, it will be downloaded.
+    If the data for the given resolution is not in the data path, it will automatically be downloaded.
+
+    The data required is:
+    - bio
+
 
     The resolution must be one of the following:
 
@@ -147,39 +177,38 @@ def computeRegionalClassification(resolution: str, dataPath: str = "./data"):
         Tuple: The metadata of the classification and the classification itself.
     """
 
+    print(
+        f"Computing regional classification on {resolution} resolution WorldClim data.")
+
     # Initialise the Constants
-    REQUIRED_FILES = ["tavg", "prec"]
+    REQUIRED_VARS = ["bio", "tavg", "prec"]
     CHUNKS = 100
     NUM_THREADS = 3
-    MONTHS = ["01", "02", "03", "04", "05",
-              "06", "07", "08", "09", "10", "11", "12"]
 
     # Validate the resolution
     if resolution not in RESOLUTIONS.values():
         raise ValueError(
             f"Invalid resolution: {resolution}.\nValid resolutions are: {RESOLUTIONS.values()}")
 
-    downloadRequiredFiles(REQUIRED_FILES, resolution, dataPath)
+    downloadRequiredFiles(REQUIRED_VARS, resolution, dataPath)
 
-    dataFiles = list(x for x in cartesian_product(REQUIRED_FILES, MONTHS))
-    geoData = readGeodataFiles(dataFiles, resolution, dataPath)
+    dataDirs = list(f"{var}_{resolution}" for var in REQUIRED_VARS)
+    geoData = readGeodataDirs(dataDirs, dataPath)
 
-    colNames = list(f"{var}_{month}" for var, month in dataFiles)
-
-    # The classification will be a df with a colum for lat, lon, tavg, prec, and classification
+    # The classification will be a df with a colum for lat, lon, classification and the geoData keys
     data = pd.DataFrame(
-        columns=["lat", "lon", "classification"].extend(colNames))
+        columns=["lat", "lon", "classification"].extend(geoData.keys()))
 
-    meta, base = geoData[colNames[0]]
+    meta, base = geoData.get(list(geoData.keys())[0])
     data["lat"] = np.repeat(base.index.values, base.shape[1])
     data["lon"] = np.tile(base.columns.values, base.shape[0])
     data["classification"] = 0  # classification values
 
     # Thus we need to flatten the tavg and prec data into columns
-    for col in tqdm(colNames, desc="Flattening data", unit="files"):
+    for col in tqdm(geoData.keys(), desc="Flattening data", unit="files"):
         data[col] = geoData[col][1].values.flatten()
 
-    classification = classifyGeoData(data, CHUNKS, NUM_THREADS)
+    classification = concurrentClassification(data, CHUNKS, NUM_THREADS)
 
     # Convert the classification back to a raster
     print("Converting classification to raster...")
@@ -195,36 +224,41 @@ def computeRegionalClassification(resolution: str, dataPath: str = "./data"):
     return (meta, classification)
 
 
-def koppenGeigerClassify(temperatureSeries, precipitationSeries, north_hemisphere: bool) -> int:
+def koppenGeigerClassify(bioVarSeries, tavgSeries, precSeries, north_hemisphere: bool) -> int:
     """
     Classifies a given location based on the Koppen-Geiger climate classification system.
 
+    Required bioclimatic variables:
+    - bio1: Annual Mean Temperature
+    - bio5: Max Temperature of Warmest Month
+    - bio6: Min Temperature of Coldest Month
+    - bio10: Mean Temperature of Warmest Quarter
+    - bio12: Annual Precipitation
+    - bio14: Precipitation of Driest Month
+
+
     Args:
-        temperatureSeries (Series): The temperature series for the location.
-        precipitationSeries (Series): The precipitation series for the location.
+        bioVarSeries (pd.Series): The series of bioclimatic variables (1-19).
+        tavgSeries (pd.Series): The series of average temperatures from January to December.
+        precSereis (pd.Series): The series of precipitation from January to December.
         north_hemisphere (bool): Whether the location is in the northern hemisphere.
 
     Returns:
         int: The classification of the location.
     """
+    m_a_t = bioVarSeries[0]
+    m_a_p = bioVarSeries[11] / 12
+    p_min = bioVarSeries[13]
 
-    tempArray = np.array(temperatureSeries)
-    precArray = np.array(precipitationSeries)
+    t_max = bioVarSeries[4]
+    t_min = bioVarSeries[5]
 
-    # If any of the values are NaN, return ""
-    if np.isnan(tempArray).any() or np.isnan(precArray).any():
-        return -1
-
-    # pre-calculations
-    m_a_t = tempArray.sum() / 12
-    m_a_p = precArray.sum() / 12
-    p_min = precArray.min()
-    t_min = tempArray.min()
-    t_max = tempArray.max()
+    precArray = np.array(tavgSeries)
+    tempArray = np.array(precSeries)
 
     t_above_10 = 0
-    for temperatureSeries in tempArray:
-        if temperatureSeries > 10:
+    for temp in tempArray:
+        if temp > 10:
             t_above_10 += 1
 
     if not north_hemisphere:  # southern hemisphere, winter from the 3rd to 9th month
@@ -345,4 +379,5 @@ if __name__ == "__main__":
     # plot the data using the colors from `CLASSIFICATION_COLORS`
     plotHeatmap(plt, sns, classification,
                 "Classification", cmap=CLASSIFICATION_CMAP)
+    plt.savefig(f"./classification_{resolution}.png")
     plt.show()

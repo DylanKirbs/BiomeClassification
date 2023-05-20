@@ -73,25 +73,6 @@ def writeGeoData(data, metadata, file: str):
         dataset.write(data, 1)
 
 
-def getFilePath(dataDir, variable, resolution, month):
-    """
-    Get the path to a WorldClim data file.
-
-    Args:
-        dataDir (str): The path to the data directory.
-        variable (str): The variable of the data.
-        resolution (str): The resolution of the data.
-        month (str): The month of the data. (eg: "01" for January)
-
-    Returns:
-        str: The path to the data file.
-    """
-    path = os.path.join(dataDir, f"{variable}_{resolution}/")
-    path = os.path.join(
-        path, f"wc{WC_VERSION}_{resolution}_{variable}_{month}.tif")
-    return path
-
-
 def plotHeatmap(plt, sns, data, title, cmap="coolwarm"):
     """
     Plot a heatmap of the data.
