@@ -72,31 +72,29 @@ def readGeodataFiles(dataNames: list[tuple[str, str]], resolution: str, dataPath
 
 
 def classifyGeoData(data: pd.DataFrame, chunks_size: int = 100, thread_count: int = 2):
+    """
+    Classifies the given geodata.
+
+    TODO: Implement threading
+
+    Args:
+        data (pd.DataFrame): The geodata to classify.
+        chunks_size (int, optional): Number of chunks. Defaults to 100.
+        thread_count (int, optional): Number of threads. Defaults to 2.
+
+    Returns:
+        pd.DataFrame: The classified geodata.
+    """
 
     chunk_size = data.shape[0] // chunks_size
 
-    chunks = [data.iloc[i:i+chunk_size]
-              for i in range(0, data.shape[0], chunk_size)]
-
-    """# TODO may need to fix the aggregation and return corrected data
-    # Create a ThreadPoolExecutor with a specified number of threads
-    with concurrent.futures.ThreadPoolExecutor(max_workers=thread_count) as executor:
-
-        # Submit the processing of each chunk to the executor
-        futures = [executor.submit(computeChunk, chunk)
-                   for chunk in chunks]
-
-        # Iterate over the completed futures to retrieve the results
-        for future in tqdm(concurrent.futures.as_completed(futures), total=len(futures), desc="Processing chunks"):
-            result = future.result()  # Get the processed chunk
-            # Optionally, you can aggregate or process the results here"""
-
-    for chunk in tqdm(chunks, desc="Computing chunks", unit="chunks"):
+    for i in tqdm(range(0, data.shape[0], chunk_size), desc="Computing chunks", unit="chunks"):
 
         # Cols 0:2 are lat, lon and class
         # Cols 3:15 are tavg_01:12
         # Cols 16:28 are prec_01:12
-        computeChunk(chunk)
+        data.loc[i:i+chunk_size,
+                 'classification'] = computeChunk(data.loc[i:i+chunk_size, :])
 
         # print(classification.iloc[i:i+chunk_size]['classification'])
 
@@ -118,9 +116,8 @@ def computeChunk(chunk):
     Returns:
         dataframe: The processed chunk
     """
-    chunk.loc['classification'] = chunk.apply(
-        lambda row: koppen_beck(row[3:15], row[16:28], row[0] > 0), axis=1)
-    return chunk
+    return chunk.apply(
+        lambda row: koppenGeigerClassify(row[3:15], row[16:28], row[0] > 0), axis=1)
 
 
 def computeRegionalClassification(resolution: str, dataPath: str = "./data"):
@@ -198,55 +195,67 @@ def computeRegionalClassification(resolution: str, dataPath: str = "./data"):
     return (meta, classification)
 
 
-def koppen_beck(temp: float, prec: float, north_hemisphere: bool) -> int:
+def koppenGeigerClassify(temperatureSeries, precipitationSeries, north_hemisphere: bool) -> int:
+    """
+    Classifies a given location based on the Koppen-Geiger climate classification system.
 
-    temps = np.array(temp)
-    precs = np.array(prec)
+    Args:
+        temperatureSeries (Series): The temperature series for the location.
+        precipitationSeries (Series): The precipitation series for the location.
+        north_hemisphere (bool): Whether the location is in the northern hemisphere.
+
+    Returns:
+        int: The classification of the location.
+    """
+
+    tempArray = np.array(temperatureSeries)
+    precArray = np.array(precipitationSeries)
 
     # If any of the values are NaN, return ""
-    if np.isnan(temps).any() or np.isnan(precs).any():
-        return 0
+    if np.isnan(tempArray).any() or np.isnan(precArray).any():
+        return -1
 
     # pre-calculations
-    m_a_t = temps.sum() / 12
-    m_a_p = precs.sum() / 12
-    p_min = precs.min()
-    t_min = temps.min()
-    t_max = temps.max()
+    m_a_t = tempArray.sum() / 12
+    m_a_p = precArray.sum() / 12
+    p_min = precArray.min()
+    t_min = tempArray.min()
+    t_max = tempArray.max()
 
     t_above_10 = 0
-    for temp in temps:
-        if temp > 10:
+    for temperatureSeries in tempArray:
+        if temperatureSeries > 10:
             t_above_10 += 1
 
     if not north_hemisphere:  # southern hemisphere, winter from the 3rd to 9th month
-        if precs[3:9].sum() > 0.7 * m_a_p:
+        if precArray[3:9].sum() > 0.7 * m_a_p:
             p_thresh = 2 * m_a_t
-        elif np.concatenate((precs[0:3], precs[9:12])).sum() > 0.7 * m_a_p:  # summer
+        # summer
+        elif np.concatenate((precArray[0:3], precArray[9:12])).sum() > 0.7 * m_a_p:
             p_thresh = 2 * m_a_t + 28
         else:
             p_thresh = 2 * m_a_t + 14
-        p_w_min = precs[3:9].min()
-        p_w_max = precs[3:9].max()
+        p_w_min = precArray[3:9].min()
+        p_w_max = precArray[3:9].max()
         p_s_min = np.concatenate(
-            (precs[0:3], precs[9:12])).min()
+            (precArray[0:3], precArray[9:12])).min()
         p_s_max = np.concatenate(
-            (precs[0:3], precs[9:12])).max()
+            (precArray[0:3], precArray[9:12])).max()
 
     else:  # northern hemisphere, summer from the 3rd to 9th month
         he = "N"
-        if np.concatenate((precs[0:3], precs[9:12])).sum() > 0.7 * m_a_p:
+        if np.concatenate((precArray[0:3], precArray[9:12])).sum() > 0.7 * m_a_p:
             p_thresh = 2 * m_a_t
-        elif precs[3:9].sum() > 0.7 * m_a_p:  # summer
+        elif precArray[3:9].sum() > 0.7 * m_a_p:  # summer
             p_thresh = 2 * m_a_t + 28
         else:
             p_thresh = 2 * m_a_t + 14
-        p_s_min = precs[3:9].min()
-        p_s_max = precs[3:9].max()
+        p_s_min = precArray[3:9].min()
+        p_s_max = precArray[3:9].max()
         p_w_min = np.concatenate(
-            (precs[0:3], precs[9:12])).min()
+            (precArray[0:3], precArray[9:12])).min()
         p_w_max = np.concatenate(
-            (precs[0:3], precs[9:12])).max()
+            (precArray[0:3], precArray[9:12])).max()
 
     # classification conditionals
     koppenClass = ""
