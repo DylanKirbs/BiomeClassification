@@ -2,25 +2,12 @@ import os
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
-import matplotlib.pyplot as plt
-from constants import RESOLUTIONS, AnsiColours
-from data.WCDownloader import downloadData, extractData
-from data.GeoTif import readGeoData, writeGeoData
-from constants import KOPPEN_DICT, CLASSIFICATION_CMAP, CLASSIFICATION_NAMES
 import concurrent.futures
-
-
-def cPrint(text: str, colour: str = AnsiColours.WHITE, end: str = "\n") -> None:
-    """
-    Prints the given text in the given colour.
-
-    Args:
-        text (str): The text to print.
-        colour (str, optional): The ANSI colour string to print in. Defaults to AnsiColours.WHITE.
-        end (str, optional): The end character. Defaults to "\n".
-    """
-
-    print(f"{colour}{text}{AnsiColours.RESET}", end=end)
+import matplotlib.pyplot as plt
+from constants import KOPPEN_DICT
+from printUtils import cPrint, AnsiColours
+from data.GeoTif import readGeoData, writeGeoData
+from data.WCDownloader import downloadData, extractData, RESOLUTIONS
 
 
 def downloadRequiredFiles(files: list[str], resolution, dataPath: str = "./data") -> None:
@@ -198,9 +185,9 @@ def computeRegionalClassification(resolution: str, dataPath: str = "./data"):
     NUM_THREADS = 3
 
     # Validate the resolution
-    if resolution not in RESOLUTIONS.values():
+    if resolution not in RESOLUTIONS:
         raise ValueError(
-            f"Invalid resolution: {resolution}.\nValid resolutions are: {RESOLUTIONS.values()}")
+            f"Invalid resolution: {resolution}.\nValid resolutions are: {RESOLUTIONS}")
 
     downloadRequiredFiles(REQUIRED_VARS, resolution, dataPath)
 
