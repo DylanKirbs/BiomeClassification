@@ -15,15 +15,18 @@ This project aims to predict the likelihood of an observed variable being in a c
 
 We aim to classify the biome of a given location based on the following observed variables:
 
+- Bioclimactic Variables
 - Temperature
 - Precipitation
-- Elevation
 
 And in future we hope to include the following observed variables:
 
+- Elevation
 - Soil Type
 - Vegetation Type
 - Animal Type
+
+More info about the data can be found [here](#the-data).
 
 ![The most recent classification at 5m](classification_5m.png)
 
@@ -94,6 +97,7 @@ The 5 minute resolution data is used for this project.
 
 The downloader script will download and extract the `.tif` files for the following variables by default:
 
+- Bioclimactic Variables
 - Average Temperature
 - Precipitation
 
