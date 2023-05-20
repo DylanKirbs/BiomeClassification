@@ -1,5 +1,12 @@
 # Climate Classification
 
+- [Climate Classification](#climate-classification)
+  - [Introduction](#introduction)
+  - [The Classifications Methods](#the-classifications-methods)
+    - [Koppen-Geiger Climate Classification](#koppen-geiger-climate-classification)
+    - [The Naive Bayes Classifier](#the-naive-bayes-classifier)
+  - [The Data](#the-data)
+
 ## Introduction
 
 This project aims to predict the likelihood of an observed variable being in a certain category (biome) based on the values of the observed variables.
@@ -20,12 +27,9 @@ And in future we hope to include the following observed variables:
 
 Predicting the biome of a given location based on the observed variables is a classification problem. There are many classification methods available, but we will focus on the following:
 
-- [Climate Classification](#climate-classification)
-  - [Introduction](#introduction)
-  - [The Classifications Methods](#the-classifications-methods)
-    - [Koppen-Geiger Climate Classification](#koppen-geiger-climate-classification)
-    - [The Naive Bayes Classifier](#the-naive-bayes-classifier)
-  - [The Data](#the-data)
+- Koppen-Geiger Climate Classification
+- Naive Bayes Classifier
+
 
 ### Koppen-Geiger Climate Classification
 
