@@ -388,8 +388,6 @@ if __name__ == "__main__":
         f"./data/classification_{resolution}.tif")
 
     print("Plotting...")
-    # plot the data using the colors from `CLASSIFICATION_COLORS`
-    plotHeatmap(plt, classification,
-                "Classification", cmap=CLASSIFICATION_CMAP, tick_labels=CLASSIFICATION_NAMES)  # type: ignore
+    plt.imshow(classification)
     plt.savefig(f"./classification_{resolution}.png")
     plt.show()
