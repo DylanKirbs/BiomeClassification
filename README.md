@@ -29,7 +29,6 @@ And in future we hope to include the following observed variables:
 More info about the data can be found [here](#the-data).
 
 ![The most recent classification at 5m](classification_5m.png)
-![Alt text](data/classification_5m.tif)
 
 ## The Classifications Methods
 
