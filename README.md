@@ -25,6 +25,8 @@ And in future we hope to include the following observed variables:
 - Vegetation Type
 - Animal Type
 
+![The most recent classification at 5m](classification_5m.png)
+
 ## The Classifications Methods
 
 Predicting the biome of a given location based on the observed variables is a classification problem. There are many classification methods available, but we will focus on the following:
