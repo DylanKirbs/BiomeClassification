@@ -6,6 +6,8 @@
     - [Koppen-Geiger Climate Classification](#koppen-geiger-climate-classification)
     - [The Naive Bayes Classifier](#the-naive-bayes-classifier)
   - [The Data](#the-data)
+  - [License](#license)
+  - [Contributing](#contributing)
 
 ## Introduction
 
@@ -93,4 +95,12 @@ The downloader script will download and extract the `.tif` files for the followi
 - Average Temperature
 - Precipitation
 
-At 5 minute resolution, the data is available for the years 1970-2000.
+The data is averaged over the years 1970-2000 to create a single `.tif` file for each variable.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
+
+## Contributing
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on the code of conduct, and the process for submitting pull requests.
