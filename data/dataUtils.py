@@ -73,14 +73,15 @@ def writeGeoData(data, metadata, file: str):
         dataset.write(data, 1)
 
 
-def plotHeatmap(plt, sns, data, title, cmap="coolwarm"):
+def plotHeatmap(plt, data, title, cmap="coolwarm", tick_labels=[0, 1]):
     """
     Plot a heatmap of the data.
 
     Args:
         data (DataFrame): The data to plot.
         title (str): The title of the plot.
-        unit (str): The unit of the data (eg: "°C")
+        cmap (str, optional): The color map to use. Defaults to "coolwarm".
+        tick_labels (list, optional): The tick labels to use. Defaults to [0, 1].
     """
     dims = data.shape[::-1]
 
@@ -92,4 +93,6 @@ def plotHeatmap(plt, sns, data, title, cmap="coolwarm"):
     plt.title(title)
     plt.xlabel("Longitude")
     plt.ylabel("Latitude")
-    sns.heatmap(data, annot=False, cmap=cmap, cbar=True)
+    plt.imshow(data, cmap=cmap)
+    cbar = plt.colorbar(ticks=np.arange(len(tick_labels)))
+    cbar.set_ticklabels(tick_labels)

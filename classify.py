@@ -2,7 +2,6 @@ import os
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
-import seaborn as sns
 import matplotlib.pyplot as plt
 from data.constants import RESOLUTIONS, AnsiColours
 from data.downloader import downloadData, extractData
@@ -95,7 +94,7 @@ def readGeodataDirs(dataDirs: list[str], dataPath: str = "./data"):
     return geoData
 
 
-def concurrentClassification(data: pd.DataFrame, chunks_size: int = 100, thread_count: int = 2):
+def concurrentClassification(data: pd.DataFrame, num_chunks: int = 100, thread_count: int = 2):
     """
     Classifies the given geodata concurrently.
 
@@ -103,14 +102,15 @@ def concurrentClassification(data: pd.DataFrame, chunks_size: int = 100, thread_
 
     Args:
         data (pd.DataFrame): The geodata to classify.
-        chunks_size (int, optional): Number of chunks. Defaults to 100.
+        num_chunks (int, optional): Number of chunks. Defaults to 100.
         thread_count (int, optional): Number of threads. Defaults to 2.
 
     Returns:
         pd.DataFrame: The classified geodata.
     """
 
-    chunk_size = data.shape[0] // chunks_size
+    """ # TODO Confirm the new method works before removing this
+    chunk_size = data.shape[0] // chunks
 
     for i in tqdm(range(0, data.shape[0], chunk_size), desc="Computing chunks", unit="chunks"):
 
@@ -118,6 +118,19 @@ def concurrentClassification(data: pd.DataFrame, chunks_size: int = 100, thread_
                  'classification'] = computeChunk(data.loc[i:i+chunk_size, :])
 
     return data
+    """
+
+    chunk_size = data.shape[0] // num_chunks
+    chunks = [data.iloc[i:i + chunk_size]
+              for i in range(0, data.shape[0], chunk_size)]
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=thread_count) as executor:
+        classified_chunks = list(executor.map(classify_chunk, chunks))
+
+    # Combine the classified chunks back into a single DataFrame
+    classified_data = pd.concat(classified_chunks)
+
+    return classified_data
 
 
 def computeChunk(chunk):
@@ -357,7 +370,7 @@ def koppenGeigerClassify(bioVarSeries, tavgSeries, precSeries, north_hemisphere:
 
 if __name__ == "__main__":
 
-    recompute = True
+    recompute = False
     resolution = "5m"
 
     if recompute:
@@ -376,7 +389,7 @@ if __name__ == "__main__":
 
     print("Plotting...")
     # plot the data using the colors from `CLASSIFICATION_COLORS`
-    plotHeatmap(plt, sns, classification,
-                "Classification", cmap=CLASSIFICATION_CMAP, ticklabels=CLASSIFICATION_NAMES)
+    plotHeatmap(plt, classification,
+                "Classification", cmap=CLASSIFICATION_CMAP, tick_labels=CLASSIFICATION_NAMES)  # type: ignore
     plt.savefig(f"./classification_{resolution}.png")
     plt.show()
