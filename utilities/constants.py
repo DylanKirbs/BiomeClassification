@@ -5,33 +5,34 @@ KOPPEN_DICT = {
     "Af": 1,
     "Am": 2,
     "Aw": 3,
-    "BWh": 4,
-    "BWk": 5,
-    "BSh": 6,
-    "BSk": 7,
-    "Csa": 8,
-    "Csb": 9,
-    "Csc": 10,
-    "Cwa": 11,
-    "Cwb": 12,
-    "Cwc": 13,
-    "Cfa": 14,
-    "Cfb": 15,
-    "Cfc": 16,
-    "Dsa": 17,
-    "Dsb": 18,
-    "Dsc": 19,
-    "Dsd": 20,
-    "Dwa": 21,
-    "Dwb": 22,
-    "Dwc": 23,
-    "Dwd": 24,
-    "Dfa": 25,
-    "Dfb": 26,
-    "Dfc": 27,
-    "Dfd": 28,
-    "ET": 29,
-    "EF": 30
+    "As": 4,
+    "BWh": 5,
+    "BWk": 6,
+    "BSh": 7,
+    "BSk": 8,
+    "Csa": 9,
+    "Csb": 10,
+    "Csc": 11,
+    "Cwa": 12,
+    "Cwb": 13,
+    "Cwc": 14,
+    "Cfa": 15,
+    "Cfb": 16,
+    "Cfc": 17,
+    "Dsa": 18,
+    "Dsb": 19,
+    "Dsc": 20,
+    "Dsd": 21,
+    "Dwa": 22,
+    "Dwb": 23,
+    "Dwc": 24,
+    "Dwd": 25,
+    "Dfa": 26,
+    "Dfb": 27,
+    "Dfc": 28,
+    "Dfd": 29,
+    "ET": 30,
+    "EF": 31
 }
 """
 The dictionary of Koeppen-Geiger climate classification codes.
@@ -63,7 +64,8 @@ CLASSIFICATION_COLORS = [
     '#0000FE',
     '#0077FF',
     '#46A9FA',
-    '#FE0000',
+    '#A9F5FF',
+    '#F00000',
     '#FE9695',
     '#F5A301',
     '#FFDB63',
@@ -99,6 +101,41 @@ The colors are stored as hex values.
 The values correspond to the Koppen-Geiger climate classification integer codes from the `KOPPEN_DICT` dictionary.
 Value 0 is reserved for the "NA" or empty classification, this is the default color for the map.
 """
+
+CLASSIFICATION_COLORS_2 = [
+    '#FFFFFF',
+    '#930101',  # Af
+    '#fd0000',  # Am
+    '#ffcaca',  # Aw
+    '#fd686c',  # As
+    '#fccb03',  # BWh
+    '#fdfc54',  # BWk
+    '#c98a00',  # BSh
+    '#cbab54',  # BSk
+    '#00fe00',  # Csa
+    '#95ff00',  # Csb
+    '#cbff00',  # Csc
+    '#b46500',  # Cwa
+    '#966604',  # Cwb
+    '#5e4001',  # Cwc
+    '#003000',  # Cfa
+    '#015001',  # Cfb
+    '#007700',  # Cfc
+    '#fe6cfd',  # Dsa
+    '#f8b9f7',  # Dsb
+    '#e6cafd',  # Dsc
+    '#cacccb',  # Dsd
+    '#ccb6ff',  # Dwa
+    '#997cb2',  # Dwb
+    '#8a59b2',  # Dwc
+    '#6d23b3',  # Dwd
+    '#300030',  # Dfa
+    '#650164',  # Dfb
+    '#cb00cb',  # Dfc
+    '#c71587',  # Dfd
+    '#65ffff',  # ET
+    '#6396ff',  # EF
+]
 
 CLASSIFICATION_CMAP = colors.ListedColormap(
     [colors.hex2color(hex_value)for hex_value in CLASSIFICATION_COLORS]
