@@ -9,7 +9,6 @@ if __name__ == "__main__":
 import os
 import requests
 import zipfile
-from ..utilities.printUtils import cPrint, AnsiColours
 
 
 WC_VERSION = "2.1"
@@ -120,47 +119,3 @@ def extractData(variable: str, res: str = "5m", dataDir: str = "./data"):
     fileName = f'{variable}_{res}'
     with zipfile.ZipFile(f'{dataDir}/{fileName}.zip', 'r') as zip_ref:
         zip_ref.extractall(f"{dataDir}/{fileName}")
-
-
-def downloadFileList(files: list[str], resolution, dataPath: str = "./data") -> None:
-    """
-    Checks for and downloads any necessary files from the list.
-
-    The files will be downloaded and extracted into directories in the data directory with their respective name and resolution.
-
-    The file list should simply contain the WC variable names.
-    For example:
-        `files = ['tavg','prec']`
-
-    Args:
-        files (list[str]): The list of files.
-        resolution (str): The resolution of the files.
-        dataPath (str, optional): The data directory. Defaults to "./data".
-    """
-
-    cPrint("Checking for required files.", AnsiColours.BLUE)
-
-    # Check for the directory
-    if not os.path.isdir(dataPath):
-        cPrint("Creating data directory.", AnsiColours.YELLOW)
-        os.makedirs(dataPath)
-
-    # Check for the files
-    for file in files:
-        if not os.path.isdir(f"{dataPath}/{file}_{resolution}"):
-            cPrint(
-                f"{file}_{resolution} directory not found. Checking for zip file.", AnsiColours.YELLOW)
-
-            # Check for the zip file
-            if not os.path.isfile(f"{dataPath}/{file}_{resolution}.zip"):
-                cPrint(
-                    f"{file}_{resolution}.zip not found. Downloading.", AnsiColours.YELLOW)
-                downloadData(file, resolution, dataPath)
-                cPrint(f"{file}_{resolution}.zip downloaded.",
-                       AnsiColours.GREEN)
-
-            # Extract the zip file
-            extractData(file, resolution, dataPath)
-            cPrint(f"{file}_{resolution}.zip extracted.", AnsiColours.GREEN)
-
-        cPrint(f"{file}_{resolution} directory found.", AnsiColours.GREEN)
