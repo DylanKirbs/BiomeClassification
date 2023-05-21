@@ -1,6 +1,7 @@
 # Climate Classification
 
 - [Climate Classification](#climate-classification)
+- [IMPORTANT NOTICE](#important-notice)
   - [Introduction](#introduction)
   - [The Classifications Methods](#the-classifications-methods)
     - [Koppen-Geiger Climate Classification](#koppen-geiger-climate-classification)
@@ -8,6 +9,15 @@
   - [The Data](#the-data)
   - [License](#license)
   - [Contributing](#contributing)
+
+
+# IMPORTANT NOTICE
+
+The project is currently in a very early stage of development. The code is not yet ready for use. The README is also not yet complete.
+Contributions are welcome, but please read the [CONTRIBUTING.md](CONTRIBUTING.md) file before submitting a pull request.
+
+**It is not working at the moment**
+
 
 ## Introduction
 
@@ -28,7 +38,7 @@ And in future we hope to include the following observed variables:
 
 More info about the data can be found [here](#the-data).
 
-![The most recent classification at 5m](classification_5m.png)
+![The Classification image](classification.png)
 
 ## The Classifications Methods
 

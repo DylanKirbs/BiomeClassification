@@ -6,6 +6,8 @@ data/*.zip
 data/*/
 *.tif
 *.sqlite
+*.gri
+*.grd
 
 # Python Files
 *__pycache__/
