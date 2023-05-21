@@ -5,6 +5,7 @@
 data/*.zip
 data/*/
 *.tif
+*.sqlite
 
 # Python Files
 *__pycache__/

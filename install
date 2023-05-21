@@ -8,3 +8,5 @@ CL_YELLOW="\e[33m"
 CL_BLUE="\e[34m"
 
 echo -e "${CL_BLUE}Running Installation Script${CL_RESET}"
+
+# Install sqlite3 sudo apt-get install sqlite3 libsqlite3-dev
